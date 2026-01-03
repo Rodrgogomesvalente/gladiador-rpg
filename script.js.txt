@@ -1,0 +1,129 @@
+// CONFIGURAÇÕES E DADOS
+const MERCS = [
+    { id: 1, name: "Arqueiro Auxiliar", cost: 150, bonusSkl: 5, bonusStr: 1 },
+    { id: 2, name: "Escudeiro Brutamontes", cost: 400, bonusSkl: 2, bonusStr: 8 },
+    { id: 3, name: "Centurião Renegado", cost: 1000, bonusSkl: 10, bonusStr: 10 }
+];
+
+let player = JSON.parse(localStorage.getItem('gladiator_v7')) || {
+    gold: 200, ep: 12, stats: { str: 10, skl: 10 },
+    mercs: [], job: { active: false, endTime: 0, reward: 0 }
+};
+
+// INICIALIZAÇÃO
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btn-battle').addEventListener('click', battle);
+    document.getElementById('btn-job').addEventListener('click', startJob);
+    document.getElementById('btn-collect-job').addEventListener('click', collectJob);
+    
+    setInterval(updateJobProgress, 1000);
+    updateUI();
+});
+
+// LÓGICA DE COMBATE
+function battle() {
+    if(player.ep <= 0) return addLog("Energia insuficiente!", "error");
+    
+    player.ep--;
+    let tStr = player.stats.str;
+    let tSkl = player.stats.skl;
+
+    player.mercs.forEach(mId => {
+        const m = MERCS.find(x => x.id === mId);
+        tStr += m.bonusStr; tSkl += m.bonusSkl;
+    });
+
+    if(Math.random() * 25 < tSkl) {
+        const win = 20 + Math.floor(Math.random() * 15);
+        player.gold += win;
+        addLog(`⚔️ Vitória! Ganhou ${win} de ouro.`, "success");
+    } else {
+        addLog("⚔️ Derrota na arena...", "error");
+    }
+    updateUI();
+}
+
+// SISTEMA DE TRABALHO
+function startJob() {
+    if(player.job.active) return;
+    const hrs = prompt("Trabalhar por quantas horas? (1-8)");
+    if(hrs >= 1 && hrs <= 8) {
+        player.job = {
+            active: true,
+            endTime: Date.now() + (hrs * 3600 * 1000),
+            reward: hrs * 60
+        };
+        addLog(`💼 Você começou a trabalhar por ${hrs}h.`, "info");
+        updateUI();
+    }
+}
+
+function updateJobProgress() {
+    if(!player.job.active) return;
+    const now = Date.now();
+    const remaining = player.job.endTime - now;
+    const total = (player.job.reward / 60) * 3600 * 1000;
+    const percent = Math.max(0, Math.min(100, ((total - remaining) / total) * 100));
+
+    document.getElementById('job-status').style.display = 'block';
+    document.getElementById('job-progress').style.width = percent + "%";
+
+    if(now >= player.job.endTime) {
+        document.getElementById('job-msg').innerText = "Trabalho Concluído!";
+        document.getElementById('btn-collect-job').disabled = false;
+    } else {
+        document.getElementById('job-msg').innerText = `Trabalhando... (${Math.ceil(remaining/60000)} min)`;
+    }
+}
+
+function collectJob() {
+    player.gold += player.job.reward;
+    addLog(`💰 Recebeu ${player.job.reward} de ouro do trabalho.`, "success");
+    player.job.active = false;
+    document.getElementById('job-status').style.display = 'none';
+    updateUI();
+}
+
+// UI ENGINE
+function updateUI() {
+    document.getElementById('p-gold').innerText = player.gold;
+    document.getElementById('p-ep').innerText = player.ep;
+    
+    let bStr = 0, bSkl = 0;
+    player.mercs.forEach(id => {
+        const m = MERCS.find(x => x.id === id);
+        bStr += m.bonusStr; bSkl += m.bonusSkl;
+    });
+
+    document.getElementById('p-str').innerText = player.stats.str + ` (+${bStr})`;
+    document.getElementById('p-skl').innerText = player.stats.skl + ` (+${bSkl})`;
+
+    const mList = document.getElementById('merc-list');
+    mList.innerHTML = '';
+    MERCS.forEach(m => {
+        const owned = player.mercs.includes(m.id);
+        mList.innerHTML += `
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.9em">
+                <span>${m.name}</span>
+                ${owned ? '<b style="color:var(--success)">ATIVO</b>' : `<button onclick="hire(${m.id})" class="btn" style="padding:2px 10px">${m.cost}g</button>`}
+            </div>`;
+    });
+
+    localStorage.setItem('gladiator_v7', JSON.stringify(player));
+}
+
+function hire(id) {
+    const m = MERCS.find(x => x.id === id);
+    if(player.gold >= m.cost) {
+        player.gold -= m.cost;
+        player.mercs.push(id);
+        addLog(`🤝 ${m.name} contratado!`, "success");
+        updateUI();
+    }
+}
+
+function addLog(msg, type) {
+    const log = document.getElementById('log');
+    const colors = { success: '#27ae60', error: '#e74c3c', info: '#3498db' };
+    log.innerHTML = `<div style="color:${colors[type] || '#aaa'}">> ${msg}</div>` + log.innerHTML;
+}

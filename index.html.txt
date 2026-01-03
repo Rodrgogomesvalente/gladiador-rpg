@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gladiator Legends | RPG Arena</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="main-container">
+    <aside>
+        <div class="card">
+            <h3><i class="fas fa-user-shield"></i> Gladiador</h3>
+            <p><i class="fas fa-coins" class="gold-icon"></i> Ouro: <span id="p-gold" class="stat-val">0</span></p>
+            <p><i class="fas fa-bolt" class="energy-icon"></i> Energia: <span id="p-ep" class="stat-val">0</span>/12</p>
+            <hr>
+            <p>⚔️ Força: <span id="p-str" class="stat-val">0</span></p>
+            <p>🎯 Hab.: <span id="p-skl" class="stat-val">0</span></p>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-users"></i> Mercenários</h3>
+            <div id="merc-list"></div>
+        </div>
+    </aside>
+
+    <main>
+        <div class="card">
+            <h3><i class="fas fa-khanda"></i> Centro de Treinamento</h3>
+            <div class="action-buttons">
+                <button class="btn" id="btn-battle"><i class="fas fa-skull"></i> Arena</button>
+                <button class="btn btn-job" id="btn-job"><i class="fas fa-hammer"></i> Trabalhar</button>
+            </div>
+            
+            <div id="job-status" class="job-card" style="display:none;">
+                <p id="job-msg">Trabalhando...</p>
+                <div class="progress-container"><div id="job-progress" class="progress-bar"></div></div>
+                <button class="btn" id="btn-collect-job" disabled>Coletar Ouro</button>
+            </div>
+
+            <div id="log"></div>
+        </div>
+    </main>
+
+    <aside>
+        <div class="card">
+            <h3><i class="fas fa-briefcase"></i> Inventário</h3>
+            <div id="inv-list"></div>
+        </div>
+    </aside>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
